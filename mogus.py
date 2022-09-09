@@ -8,7 +8,7 @@ import zipfile
 from glob import glob
 from os import remove
 from pathlib import Path
-from shutil import copytree, move, rmtree
+from shutil import copy, copytree, move, rmtree
 
 from requests import get
 
@@ -17,12 +17,18 @@ release = get(
     'https://api.github.com/repos/eDonnes124/Town-Of-Us-R/releases/latest'
 )
 release = release.json()
-filename = Path(release['assets'][0]['name'])
+release_tag = release['name']
+
+for i in release['assets']:
+    if i['name'].endswith("zip"):
+        filename = Path(i['name'])
+        ziplink = i['browser_download_url']
 
 # Download latest version of ToU and name the zip after it's github release zip
-print(f"Downloading {filename}, please wait.")
-mogus = get(release['assets'][0]['browser_download_url'])
-filename.write_bytes(mogus.content)
+if not Path(filename).is_file():
+    print(f"Downloading {filename}, please wait.")
+    mogus = get(ziplink)
+    filename.write_bytes(mogus.content)
 
 # Extract the zip
 mogus_zip = zipfile.ZipFile(filename)
@@ -31,13 +37,25 @@ mogus_zip.close()
 
 # Clone the mogus folder
 print('Paste your Among Us install dir, example: C:\Games\Steam\steamapps\common\Among Us')
-mogus_dir = input('Among Us dir: ')
+validPath = False
+while not validPath:
+    mogus_dir = input('Among Us dir: ')
+    if not Path(f"{mogus_dir}\Among Us.exe").is_file():
+        print("Invalid Among Us path, please specify the directory with 'Among Us.exe'.")
+    else:
+        validPath = True
 modded_dir = f"{mogus_dir} - ToU"
-copytree(mogus_dir, modded_dir)
+if Path(f"{modded_dir}\BepInEx").exists():
+    print('Cleaning out modded files')
+    rmtree(f"{modded_dir}\BepInEx")
+if Path(f"{modded_dir}\mono").exists():
+    rmtree(f"{modded_dir}\mono")
+
+if not Path(modded_dir).exists():
+    copytree(mogus_dir, modded_dir)
 
 # move ToU files to cloned mogus dir
-for file in glob('ToU/**/**'):
-    move(file, modded_dir)
+copytree(f'ToU\\ToU {release_tag}', modded_dir, dirs_exist_ok=True)
 
 # Clean up
 remove(filename)
