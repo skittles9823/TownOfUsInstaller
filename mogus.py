@@ -5,10 +5,9 @@
 # http://www.wtfpl.net/ for more details.
 
 import zipfile
-from glob import glob
 from os import remove
 from pathlib import Path
-from shutil import copy, copytree, move, rmtree
+from shutil import copytree, rmtree
 
 from requests import get
 
