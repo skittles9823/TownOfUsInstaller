@@ -47,6 +47,9 @@ modded_dir = f"{mogus_dir} - ToU"
 if Path(f"{modded_dir}\BepInEx").exists():
     print('Cleaning out modded files')
     rmtree(f"{modded_dir}\BepInEx")
+if Path(f"{modded_dir}\dotnet").exists():
+    rmtree(f"{modded_dir}\dotnet")
+# Mono is no longer used in ToU, keep check in case people somehow use this installer/updater on an ancient version
 if Path(f"{modded_dir}\mono").exists():
     rmtree(f"{modded_dir}\mono")
 
